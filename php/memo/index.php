@@ -24,6 +24,11 @@ try{
 } catch(PDOException $e){
   echo 'DB接続エラー： '.$e->getMessage();
 }
+
+$records = $db->query('SELECT * FROM my_items');
+while ($record = $records->fetch()) {
+  print($record['item_name'] . "\n");
+}
 ?>
 </pre>
 </main>
