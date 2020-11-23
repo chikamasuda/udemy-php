@@ -28,6 +28,7 @@ $memos = $db->prepare('SELECT * FROM memos WHERE id=?');
 $memos->execute(array($id));
 $memo = $memos->fetch();
 ?>
+
 <article>
   <pre><?php print($memo['memo']); ?></pre>
   <a href="update.php?id=<?php print($memo['id']); ?>">編集する</a>
