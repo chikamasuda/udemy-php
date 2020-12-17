@@ -1,3 +1,15 @@
+<?php
+session_start();
+require('dbconnect.php');
+
+if(empty($_REQUEST['id'])) {
+  header('Location: index.php');
+  exit();
+}
+
+$posts = $db->prepare('SELECT members.name, members.picture, posts.* FROM members, posts WHERE members.id=posts.member_id AND posts.id=?');
+$posts->execute(array($_REQUEST['id']));
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -16,15 +28,16 @@
   </div>
   <div id="content">
   <p>&laquo;<a href="index.php">一覧にもどる</a></p>
-
+  <?php if($post = $posts->fetch()): ?>
     <div class="msg">
-    <img src="member_picture/" />
-    <p><span class="name">（）</span></p>
-    <p class="day"></p>
+    <img src="member_picture/<?php print(htmlspecialchars($post['picture'])); ?>" />
+    <p><?php print(htmlspecialchars($post['message'])); ?><span class="name">（<?php print(htmlspecialchars($post['name'])); ?>）</span></p>
+    <p class="day"><?php print(htmlspecialchars($post['created'])); ?></p>
     </div>
-
+  <?php else: ?>
 	<p>その投稿は削除されたか、URLが間違えています</p>
   </div>
+  <?php endif; ?>
 </div>
 </body>
 </html>
