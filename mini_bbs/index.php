@@ -13,6 +13,9 @@ if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 }
 
 if (!empty($_POST)) {
+  if (!isset($_REQUEST['res'])) {
+    $_POST['reply_post_id'] = 0;
+  }
   if ($_POST['message'] !== '') {
     $message = $db->prepare('INSERT INTO posts SET member_id=?, message=?, reply_message_id=?, created=NOW()');
     $message->execute(array(
@@ -78,7 +81,9 @@ if (isset($_REQUEST['res'])) {
               <a href="view.php?id=" <?php print(htmlspecialchars($post['reply_message_id'], ENT_QUOTES)); ?>>
                 返信元のメッセージ</a>
             <?php endif; ?>
-            [<a href="delete.php?id=" style="color: #F33;">削除</a>]
+            <?php if($_SESSION['id'] == $post['member_id']): ?>
+            [<a href="delete.php?id=<?php print(htmlspecialchars($post['id'], ENT_QUOTES)); ?>" style="color: #F33;">削除</a>]
+            <?php endif; ?>
           </p>
         </div>
       <?php endforeach; ?>
