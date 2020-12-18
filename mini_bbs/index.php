@@ -27,8 +27,22 @@ if (!empty($_POST)) {
     exit();
   }
 }
+$page = $_REQUEST['page'];
+if ($page == '') {
+  $page = 1;
+}
+$page = max($page, 1);
 
-$posts = $db->query('SELECT members.name, members.picture, posts.* FROM members , posts WHERE members.id=posts.member_id ORDER BY posts.created DESC');
+$counts = $db->query('SELECT COUNT(*) AS cnt FROM posts');
+$cnt = $counts->fetch();
+$maxPage = ceil($cnt['cnt'] / 5);
+$page = min($page, $maxPage);
+
+$start = ($page -1) * 5;
+
+$posts = $db->prepare('SELECT members.name, members.picture, posts.* FROM members , posts WHERE members.id=posts.member_id ORDER BY posts.created DESC LIMIT ?,5');
+$posts->bindParam(1, $start, PDO::PARAM_INT);
+$posts->execute();
 
 if (isset($_REQUEST['res'])) {
   //返信の処理
@@ -78,7 +92,7 @@ if (isset($_REQUEST['res'])) {
           <p><?php print(htmlspecialchars($post['message'], ENT_QUOTES)); ?><span class="name">（<?php print(htmlspecialchars($post['name'], ENT_QUOTES)); ?>）</span>[<a href="index.php?res=<?php print(htmlspecialchars($post['id'], ENT_QUOTES)); ?>">Re</a>]</p>
           <p class="day"><a href="view.php?id=<?php print(htmlspecialchars($post['id'], ENT_QUOTES)); ?>"><?php print(htmlspecialchars($post['created'], ENT_QUOTES)); ?></a>
             <?php if ($post['reply_message_id'] > 0) : ?>
-              <a href="view.php?id=" <?php print(htmlspecialchars($post['reply_message_id'], ENT_QUOTES)); ?>>
+              <a href="view.php?id=<?php print(htmlspecialchars($post['reply_message_id'], ENT_QUOTES)); ?>">
                 返信元のメッセージ</a>
             <?php endif; ?>
             <?php if($_SESSION['id'] == $post['member_id']): ?>
@@ -88,8 +102,12 @@ if (isset($_REQUEST['res'])) {
         </div>
       <?php endforeach; ?>
       <ul class="paging">
-        <li><a href="index.php?page=">前のページへ</a></li>
-        <li><a href="index.php?page=">次のページへ</a></li>
+      <?php if($page > 1): ?>
+        <li><a href="index.php?page=<?php print($page-1); ?>">前のページへ</a></li>
+      <?php endif; ?>
+      <?php if($page < $maxPage): ?>
+        <li><a href="index.php?page=<?php print($page+1) ?>">次のページへ</a></li>
+      <?php endif; ?>
       </ul>
     </div>
   </div>
